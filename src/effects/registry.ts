@@ -4,6 +4,12 @@ import levelsFrag from '../shaders/levels.frag';
 import noiseFrag from '../shaders/noise.frag';
 import gaussianBlurFrag from '../shaders/gaussian-blur.frag';
 import curvesFrag from '../shaders/curves.frag';
+import ditherFrag from '../shaders/dither.frag';
+import crtFrag from '../shaders/crt.frag';
+import rgbShiftFrag from '../shaders/rgb-shift.frag';
+import halftoneFrag from '../shaders/halftone.frag';
+import bloomFrag from '../shaders/bloom.frag';
+import chromaticAberrationFrag from '../shaders/chromatic-aberration.frag';
 
 export const effectDefinitions: EffectDefinition[] = [
   {
@@ -66,6 +72,76 @@ export const effectDefinitions: EffectDefinition[] = [
       { name: 'u_size', label: 'Size', type: 'slider', min: 0, max: 2, step: 0.01, default: 0.8 },
       { name: 'u_softness', label: 'Softness', type: 'slider', min: 0, max: 1.5, step: 0.01, default: 0.5 },
       { name: 'u_roundness', label: 'Roundness', type: 'slider', min: 0, max: 1, step: 0.01, default: 1 },
+    ],
+    getPasses: () => [{ uniforms: {} }],
+  },
+  {
+    id: 'dither',
+    name: 'Dither',
+    category: 'Color',
+    fragSource: ditherFrag,
+    params: [
+      { name: 'u_colors', label: 'Colors', type: 'slider', min: 2, max: 16, step: 1, default: 4 },
+      { name: 'u_pixelSize', label: 'Pixel Size', type: 'slider', min: 1, max: 16, step: 1, default: 2 },
+    ],
+    getPasses: () => [{ uniforms: {} }],
+  },
+  {
+    id: 'crt',
+    name: 'CRT Screen',
+    category: 'Effects',
+    fragSource: crtFrag,
+    params: [
+      { name: 'u_scanlineIntensity', label: 'Scanline Intensity', type: 'slider', min: 0, max: 1, step: 0.01, default: 0.4 },
+      { name: 'u_scanlineWidth', label: 'Scanline Width', type: 'slider', min: 1, max: 8, step: 0.1, default: 2 },
+      { name: 'u_curvature', label: 'Curvature', type: 'slider', min: 0, max: 0.5, step: 0.01, default: 0.1 },
+      { name: 'u_vignetteAmount', label: 'Vignette', type: 'slider', min: 0, max: 2, step: 0.01, default: 0.5 },
+    ],
+    getPasses: () => [{ uniforms: {} }],
+  },
+  {
+    id: 'rgb-shift',
+    name: 'RGB Shift',
+    category: 'Effects',
+    fragSource: rgbShiftFrag,
+    params: [
+      { name: 'u_amount', label: 'Amount', type: 'slider', min: 0, max: 20, step: 0.1, default: 5 },
+      { name: 'u_angle', label: 'Angle', type: 'slider', min: 0, max: 6.28, step: 0.01, default: 0 },
+    ],
+    getPasses: () => [{ uniforms: {} }],
+  },
+  {
+    id: 'halftone',
+    name: 'Halftone',
+    category: 'Effects',
+    fragSource: halftoneFrag,
+    params: [
+      { name: 'u_dotSize', label: 'Dot Size', type: 'slider', min: 4, max: 32, step: 1, default: 8 },
+      { name: 'u_angle', label: 'Angle', type: 'slider', min: 0, max: 180, step: 1, default: 45 },
+      { name: 'u_softness', label: 'Softness', type: 'slider', min: 0, max: 1, step: 0.01, default: 0.3 },
+    ],
+    getPasses: () => [{ uniforms: {} }],
+  },
+  {
+    id: 'bloom',
+    name: 'Bloom',
+    category: 'Effects',
+    fragSource: bloomFrag,
+    params: [
+      { name: 'u_threshold', label: 'Threshold', type: 'slider', min: 0, max: 1, step: 0.01, default: 0.6 },
+      { name: 'u_intensity', label: 'Intensity', type: 'slider', min: 0, max: 2, step: 0.01, default: 0.5 },
+      { name: 'u_radius', label: 'Radius', type: 'slider', min: 1, max: 20, step: 0.1, default: 5 },
+    ],
+    getPasses: () => [{ uniforms: {} }],
+  },
+  {
+    id: 'chromatic-aberration',
+    name: 'Chromatic Aberration',
+    category: 'Effects',
+    fragSource: chromaticAberrationFrag,
+    params: [
+      { name: 'u_amount', label: 'Amount', type: 'slider', min: 0, max: 30, step: 0.1, default: 5 },
+      { name: 'u_falloff', label: 'Falloff', type: 'slider', min: 0.5, max: 3, step: 0.01, default: 1.5 },
     ],
     getPasses: () => [{ uniforms: {} }],
   },

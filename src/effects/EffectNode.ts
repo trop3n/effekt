@@ -37,4 +37,13 @@ export class EffectNode {
       values: { ...this.values },
     };
   }
+
+  static fromState(state: EffectNodeState, definition: EffectDefinition): EffectNode {
+    const node = new EffectNode(definition);
+    // Override generated id with the saved one
+    (node as { id: string }).id = state.id;
+    node.isOn = state.isOn;
+    node.values = { ...state.values };
+    return node;
+  }
 }

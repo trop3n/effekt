@@ -1,4 +1,5 @@
 import type { EffectDefinition } from '../types.ts';
+import type { GraphSnapshot } from '../history/History.ts';
 import { EffectNode } from './EffectNode.ts';
 
 export class EffectGraph {
@@ -39,5 +40,23 @@ export class EffectGraph {
 
   getActiveNodes(): EffectNode[] {
     return this.nodes.filter(n => n.isOn);
+  }
+
+  snapshot(selectedId: string | null): GraphSnapshot {
+    return {
+      nodes: this.nodes.map(n => n.toState()),
+      selectedId,
+    };
+  }
+
+  restore(snapshot: GraphSnapshot, registry: Map<string, EffectDefinition>) {
+    this.nodes = snapshot.nodes
+      .map(state => {
+        const def = registry.get(state.definitionId);
+        if (!def) return null;
+        return EffectNode.fromState(state, def);
+      })
+      .filter((n): n is EffectNode => n !== null);
+    this.onChange();
   }
 }
