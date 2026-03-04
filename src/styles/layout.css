@@ -1,0 +1,32 @@
+body.app {
+  display: grid;
+  grid-template-columns: var(--aside-layers-width) 1fr var(--aside-controls-width);
+  grid-template-rows: var(--header-height) 1fr var(--dock-height);
+  grid-template-areas:
+    "header  header  header"
+    "layers  content controls"
+    "dock    dock    dock";
+  height: 100vh;
+}
+
+.app-header {
+  grid-area: header;
+}
+
+.aside-layers {
+  grid-area: layers;
+}
+
+.content {
+  grid-area: content;
+  position: relative;
+  overflow: hidden;
+}
+
+.aside-controls {
+  grid-area: controls;
+}
+
+.dock {
+  grid-area: dock;
+}
