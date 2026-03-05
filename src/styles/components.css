@@ -541,6 +541,36 @@
   background: var(--bg-surface-4);
 }
 
+.preset-modal__item-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.preset-modal__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.preset-modal__action-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-4);
+}
+
+.preset-modal__import-btn {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
 .preset-modal__empty {
   font-size: 13px;
   color: var(--text-tertiary);

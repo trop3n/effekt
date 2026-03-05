@@ -53,3 +53,40 @@ export function renamePreset(id: string, name: string): void {
     writePresets(presets);
   }
 }
+
+export function exportPresetToFile(preset: StoredPreset): void {
+  const json = JSON.stringify(preset, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${preset.name.replace(/[^a-zA-Z0-9_-]/g, '_')}.effekt.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function importPresetFromFile(): Promise<StoredPreset | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) { resolve(null); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result as string) as StoredPreset;
+          if (!data.name || !data.snapshot?.nodes) { resolve(null); return; }
+          // Save with a fresh ID to avoid collisions
+          const preset = savePreset(data.name, data.snapshot);
+          resolve(preset);
+        } catch {
+          resolve(null);
+        }
+      };
+      reader.readAsText(file);
+    });
+    input.click();
+  });
+}

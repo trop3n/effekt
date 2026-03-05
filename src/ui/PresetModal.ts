@@ -1,5 +1,5 @@
 import type { GraphSnapshot } from '../history/History.ts';
-import { getPresets, savePreset, deletePreset } from '../presets/PresetStorage.ts';
+import { getPresets, savePreset, deletePreset, exportPresetToFile, importPresetFromFile } from '../presets/PresetStorage.ts';
 
 type Mode = 'save' | 'load';
 
@@ -108,49 +108,72 @@ export class PresetModal {
       empty.className = 'preset-modal__empty';
       empty.textContent = 'No saved presets yet.';
       this.panel.appendChild(empty);
-      return;
+    } else {
+      const list = document.createElement('div');
+      list.className = 'preset-modal__list';
+
+      for (const preset of presets) {
+        const item = document.createElement('div');
+        item.className = 'preset-modal__item';
+
+        const info = document.createElement('div');
+        info.className = 'preset-modal__item-info';
+
+        const name = document.createElement('span');
+        name.className = 'preset-modal__item-name';
+        name.textContent = preset.name;
+
+        const date = document.createElement('span');
+        date.className = 'preset-modal__item-date';
+        date.textContent = new Date(preset.createdAt).toLocaleDateString();
+
+        info.appendChild(name);
+        info.appendChild(date);
+        info.addEventListener('click', () => {
+          this.onLoad(preset.snapshot);
+          this.close();
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'preset-modal__item-actions';
+
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'preset-modal__action-btn';
+        exportBtn.textContent = '\u2913';
+        exportBtn.title = 'Export preset';
+        exportBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          exportPresetToFile(preset);
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'preset-modal__delete';
+        deleteBtn.textContent = '\u00d7';
+        deleteBtn.title = 'Delete preset';
+        deleteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deletePreset(preset.id);
+          this.render();
+        });
+
+        actions.appendChild(exportBtn);
+        actions.appendChild(deleteBtn);
+        item.appendChild(info);
+        item.appendChild(actions);
+        list.appendChild(item);
+      }
+
+      this.panel.appendChild(list);
     }
 
-    const list = document.createElement('div');
-    list.className = 'preset-modal__list';
-
-    for (const preset of presets) {
-      const item = document.createElement('div');
-      item.className = 'preset-modal__item';
-
-      const info = document.createElement('div');
-      info.className = 'preset-modal__item-info';
-
-      const name = document.createElement('span');
-      name.className = 'preset-modal__item-name';
-      name.textContent = preset.name;
-
-      const date = document.createElement('span');
-      date.className = 'preset-modal__item-date';
-      date.textContent = new Date(preset.createdAt).toLocaleDateString();
-
-      info.appendChild(name);
-      info.appendChild(date);
-      info.addEventListener('click', () => {
-        this.onLoad(preset.snapshot);
-        this.close();
-      });
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'preset-modal__delete';
-      deleteBtn.textContent = '\u00d7';
-      deleteBtn.title = 'Delete preset';
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deletePreset(preset.id);
-        this.render();
-      });
-
-      item.appendChild(info);
-      item.appendChild(deleteBtn);
-      list.appendChild(item);
-    }
-
-    this.panel.appendChild(list);
+    // Import button always visible
+    const importBtn = document.createElement('button');
+    importBtn.className = 'button button_variant_neutral preset-modal__import-btn';
+    importBtn.textContent = 'IMPORT PRESET';
+    importBtn.addEventListener('click', async () => {
+      const preset = await importPresetFromFile();
+      if (preset) this.render();
+    });
+    this.panel.appendChild(importBtn);
   }
 }
