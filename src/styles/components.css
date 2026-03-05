@@ -422,3 +422,128 @@
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
+
+/* Preset modal */
+.preset-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.preset-modal__panel {
+  position: relative;
+  width: 340px;
+  max-height: 70vh;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--color-gray-700);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.preset-modal__title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.preset-modal__input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-3);
+  border: 1px solid var(--color-gray-700);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.preset-modal__input:focus {
+  border-color: var(--color-gray-500);
+}
+
+.preset-modal__save-btn {
+  align-self: flex-end;
+}
+
+.preset-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.preset-modal__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+
+.preset-modal__item:hover {
+  background: var(--bg-surface-3);
+}
+
+.preset-modal__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.preset-modal__item-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-modal__item-date {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.preset-modal__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.preset-modal__delete:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-4);
+}
+
+.preset-modal__empty {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: var(--space-4) 0;
+}

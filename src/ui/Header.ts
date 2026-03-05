@@ -2,6 +2,8 @@ export class Header {
   constructor(
     container: HTMLElement,
     onLoadMedia: () => void,
+    onOpenPresets: () => void,
+    onSavePreset: () => void,
   ) {
     const left = document.createElement('div');
     left.className = 'app-header__left';
@@ -13,6 +15,18 @@ export class Header {
 
     const right = document.createElement('div');
     right.className = 'app-header__right';
+
+    const presetsBtn = document.createElement('button');
+    presetsBtn.className = 'button button_variant_neutral';
+    presetsBtn.textContent = 'PRESETS';
+    presetsBtn.addEventListener('click', onOpenPresets);
+    right.appendChild(presetsBtn);
+
+    const savePresetBtn = document.createElement('button');
+    savePresetBtn.className = 'button button_variant_subtle';
+    savePresetBtn.textContent = 'SAVE PRESET';
+    savePresetBtn.addEventListener('click', onSavePreset);
+    right.appendChild(savePresetBtn);
 
     const loadBtn = document.createElement('button');
     loadBtn.className = 'button button_variant_primary';

@@ -12,6 +12,7 @@ import { ControlsPanel } from './ui/ControlsPanel.ts';
 import { Toolbar } from './ui/Toolbar.ts';
 import { CanvasViewport } from './ui/CanvasViewport.ts';
 import { exportFromCanvas } from './export/ExportPNG.ts';
+import { PresetModal } from './ui/PresetModal.ts';
 import type { ExportFormat } from './export/ExportPNG.ts';
 import type { EffectDefinition } from './types.ts';
 import type { EffectNode } from './effects/EffectNode.ts';
@@ -93,8 +94,25 @@ const mediaInput = new MediaInput((image) => {
   toolbar.updateResolution(image.naturalWidth, image.naturalHeight);
 });
 
+// Preset modal
+const presetModalEl = document.getElementById('preset-modal')!;
+const presetModal = new PresetModal(
+  presetModalEl,
+  () => graph.snapshot(layersPanel.getSelectedId()),
+  (snapshot) => {
+    pushSnapshot();
+    restoreSnapshot(snapshot);
+    pushSnapshot();
+  },
+);
+
 // Header
-new Header(headerEl, () => mediaInput.openFilePicker());
+new Header(
+  headerEl,
+  () => mediaInput.openFilePicker(),
+  () => presetModal.openLoad(),
+  () => presetModal.openSave(),
+);
 
 // Drag-and-drop on canvas container
 mediaInput.setupDropZone(canvasContainer);

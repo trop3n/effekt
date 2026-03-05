@@ -1,106 +1,59 @@
+# CLAUDE.md
 
-Default to using Bun instead of Node.js.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+## Project
 
-## APIs
+Effekt is a WebGL 2 image effects editor (recreating effect.app). Built with Bun, Vite, vanilla TypeScript, and GLSL shaders.
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
-
-## Testing
-
-Use `bun test` to run tests.
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
-
-## Frontend
-
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
-
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
+## Commands
 
 ```sh
-bun --hot ./index.ts
+bun run dev       # Vite dev server with HMR
+bun run build     # Production build (~40KB JS)
+bun run preview   # Preview production build
+bun install       # Install dependencies
 ```
 
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+## Architecture
+
+### Rendering Pipeline
+- **Fullscreen triangle** via `gl_VertexID` (3 verts, no VBO) — see `src/gl/fullscreen-quad.ts`
+- **Ping-pong RGBA16F FBOs** for effect chaining — prevents precision loss across passes
+- `Pipeline.ts` iterates active `EffectNode`s, binds FBOs, sets uniforms, draws. Last pass renders to screen.
+- Multi-pass effects self-describe via `getPasses()` returning `PassDescriptor[]` (e.g., gaussian blur = 2 passes: horizontal + vertical)
+- Render-on-demand: `requestAnimationFrame` loop only runs when animated effects are active (noise with speed > 0)
+
+### Effect System
+- **`EffectDefinition`** (template): id, name, category, params, fragment shader source, `getPasses()`
+- **`EffectNode`** (instance): wraps a definition with runtime values, `isOn` toggle, serialize/deserialize via `toState()`/`fromState()`
+- **`EffectGraph`**: ordered list of nodes with add/remove/toggle/reorder. Fires `onChange()` callback for UI sync.
+- **`registry.ts`**: all 11 effect definitions (noise, levels, gaussian blur, curves, vignette, dither, CRT, RGB shift, halftone, bloom, chromatic aberration)
+- **Curves** is special: uses a 256×1 RGBA LUT texture built from Catmull-Rom spline interpolation in `CurveEditor.ts`, sampled in the shader
+
+### Standard Shader Uniforms
+All fragment shaders receive: `u_input` (sampler2D), `u_resolution` (vec2), `u_time` (float), `u_aspect` (float). Effect-specific uniforms come from `EffectNode.values`.
+
+### UI Layer
+- `Header.ts` — logo + load media button
+- `Dock.ts` — add-effect buttons (one per definition)
+- `LayersPanel.ts` — ordered effect list with drag-to-reorder, toggle visibility, remove
+- `ControlsPanel.ts` — parameter sliders for selected effect (or CurveEditor for curves)
+- `CanvasViewport.ts` — CSS-transform zoom/pan (wheel zoom, Alt+drag pan, keyboard shortcuts). Does not affect WebGL/export.
+- `Toolbar.ts` — export format picker (PNG/JPEG) + resolution display
+
+### State Management
+- **History**: 50-entry circular buffer of `GraphSnapshot`s. Undo/redo via Ctrl+Z / Ctrl+Shift+Z.
+- Slider drags capture pre-drag snapshot on `pointerdown`, push post-drag on `pointerup` — so each drag is one undo step.
+- `EffectGraph.snapshot()`/`restore()` serializes/rebuilds the full node list.
+
+### Image I/O
+- **Input**: `MediaInput.ts` — file picker + drag-drop → `TextureLoader` uploads to WebGL texture
+- **Export**: `ExportPNG.ts` — `readPixels` from FBO → flip vertically → `toBlob` → download link
+
+## Key Conventions
+
+- Use Bun for all tooling (install, run, test). Don't use npm/yarn/node.
+- Vite + `vite-plugin-glsl` for dev/build. Shaders are `.vert`/`.frag` files imported as strings.
+- Vanilla TypeScript — no React, no framework. UI is imperative DOM manipulation.
+- All WebGL code targets WebGL 2 (`#version 300 es` shaders).
